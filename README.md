@@ -19,9 +19,6 @@ It uses recent game logs (assists & rebounds) to predict a player's next game po
 
 ![NBA Stat Predictor Screenshot](https://via.placeholder.com/800x400.png?text=NBA+Stat+Predictor+Demo)
 
-> **Live Demo:** [👉 Launch App](https://nba-stat-predictor.streamlit.app)  
-*(replace with your actual Streamlit Cloud link after deployment)*
-
 ---
 
 ## 📦 Tech Stack
@@ -34,13 +31,15 @@ It uses recent game logs (assists & rebounds) to predict a player's next game po
 
 ## 🏗 Project Structure
 
+```plaintext
 NBA-Stat-Predictor/
 │
-├── app.py # Streamlit web app
-├── nba_model.pkl # Trained linear regression model
-├── requirements.txt # Project dependencies
-└── README.md # This file
-
+├── app.py              # Streamlit web app
+├── nba_model.pkl       # Trained linear regression model
+├── player_gamelogs.csv # (optional) cached data for faster loading
+├── requirements.txt    # Project dependencies
+└── README.md           # This file
+```
 ---
 
 ## ⚡ How to Run Locally
