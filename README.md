@@ -31,3 +31,40 @@ It uses recent game logs (assists & rebounds) to predict a player's next game po
 - [pandas](https://pandas.pydata.org/) – Data manipulation
 - [scikit-learn](https://scikit-learn.org/) – Linear Regression model
 - [joblib](https://joblib.readthedocs.io/) – Model persistence
+
+## 🏗 Project Structure
+
+NBA-Stat-Predictor/
+│
+├── app.py # Streamlit web app
+├── nba_model.pkl # Trained linear regression model
+├── requirements.txt # Project dependencies
+└── README.md # This file
+
+---
+
+## ⚡ How to Run Locally
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/NBA-Stat-Predictor.git
+   cd NBA-Stat-Predictor
+   ```
+ ### Create & activate virtual environment (recommended)
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Mac/Linux
+.venv\Scripts\activate      # Windows
+```
+
+### Install dependencies
+```bash
+pip install -r requirements.txt
+```
+### Run Streamlit app
+
+```bash
+streamlit run app.py
+```
+### Open the link shown in your terminal (usually http://localhost:8501).
+
