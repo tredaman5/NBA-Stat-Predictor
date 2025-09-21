@@ -1,50 +1,85 @@
-import requests
-import pandas as pd
-import numpy as np
-from sklearn.linear_model import LinearRegression
+import streamlit as st
 import joblib
+import numpy as np
+import pandas as pd
+from nba_api.stats.static import players
+from nba_api.stats.endpoints import playergamelog
 
-# --- Step 1: Get data from API ---
-players = ["LeBron James", "Stephen Curry", "Giannis Antetokounmpo", "Kevin Durant", "Luka Doncic"]
-stats_data = []
+# ---------------------------
+# Load trained model
+# ---------------------------
+model = joblib.load("nba_model.pkl")
+
+# ---------------------------
+# Helper Functions
+# ---------------------------
 
 def get_player_id(name):
-    url = f"https://www.balldontlie.io/api/v1/players?search={name}"
-    r = requests.get(url).json()
-    if r["data"]:
-        return r["data"][0]["id"]
-    return None
+    """Search for a player ID by name using nba_api."""
+    try:
+        all_players = players.get_players()
+        match = next((p for p in all_players if name.lower() in p["full_name"].lower()), None)
+        if match:
+            return match["id"], match["full_name"]
+        else:
+            return None, None
+    except Exception as e:
+        st.error(f"❌ Error searching for player: {e}")
+        return None, None
 
-def get_recent_games(player_id, num_games=20):
-    url = f"https://www.balldontlie.io/api/v1/stats?player_ids[]={player_id}&per_page={num_games}"
-    r = requests.get(url).json()
-    return r["data"]
 
-# Fetch data for each player
-for player in players:
-    pid = get_player_id(player)
-    if pid:
-        games = get_recent_games(pid)
-        for g in games:
-            stats_data.append({
-                "name": player,
-                "points": g["pts"],
-                "assists": g["ast"],
-                "rebounds": g["reb"]
-            })
+def get_recent_stats(player_id, season="2023-24", last_n_games=5):
+    """Fetch recent game logs for a player."""
+    try:
+        gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=season)
+        df = gamelog.get_data_frames()[0]
 
-# Convert to DataFrame
-df = pd.DataFrame(stats_data)
-print(df.head())
+        if df.empty:
+            return None
 
-# --- Step 2: Train a simple model ---
-X = df[["assists", "rebounds"]]
-y = df["points"]
+        # Keep only the most recent N games
+        df = df.head(last_n_games)
 
-model = LinearRegression()
-model.fit(X, y)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error fetching recent game logs: {e}")
+        return None
 
-# --- Step 3: Save the model ---
-joblib.dump(model, "nba_model.pkl")
 
-print("✅ Model trained and saved as nba_model.pkl")
+def prepare_features(df):
+    """Prepare input features [AST, REB] for the model."""
+    avg_ast = df["AST"].mean()
+    avg_reb = df["REB"].mean()
+    return np.array([[avg_ast, avg_reb]])
+
+
+# ---------------------------
+# Streamlit App UI
+# ---------------------------
+
+st.title("🏀 NBA Stat Predictor (Powered by nba_api)")
+st.write("Enter an NBA player's name to predict their next game's points using AST + REB averages.")
+
+player_name = st.text_input("Enter Player Name (e.g., Stephen Curry, LeBron James):")
+
+if st.button("Predict"):
+    if not player_name.strip():
+        st.error("⚠️ Please enter a player name.")
+    else:
+        pid, full_name = get_player_id(player_name)
+        if pid is None:
+            st.error("❌ Player not found. Try a different name.")
+        else:
+            st.info(f"🔎 Found player: {full_name} (ID: {pid})")
+
+            stats_df = get_recent_stats(pid)
+            if stats_df is None:
+                st.error("❌ Could not fetch recent games for this player.")
+            else:
+                st.write("📊 Recent Games (used for prediction):")
+                st.dataframe(stats_df[["GAME_DATE", "PTS", "AST", "REB"]])
+
+                features = prepare_features(stats_df)
+                prediction = model.predict(features)
+
+                st.success(f"🎯 Predicted Points for {full_name}: **{prediction[0]:.2f}**")
