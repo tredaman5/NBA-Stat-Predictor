@@ -49,21 +49,21 @@ NBA-Stat-Predictor/
    git clone https://github.com/your-username/NBA-Stat-Predictor.git
    cd NBA-Stat-Predictor
    ```
- ### Create & activate virtual environment (recommended)
+ #### 2. Create & activate virtual environment (recommended)
 ```bash
 python -m venv .venv
 source .venv/bin/activate   # Mac/Linux
 .venv\Scripts\activate      # Windows
 ```
 
-### Install dependencies
+#### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
-### Run Streamlit app
+#### 4. Run Streamlit app
 
 ```bash
 streamlit run app.py
 ```
-### Open the link shown in your terminal (usually http://localhost:8501).
+#### 5. Open the link shown in your terminal (usually http://localhost:8501).
 
