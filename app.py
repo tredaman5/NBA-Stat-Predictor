@@ -54,32 +54,63 @@ def prepare_features(df):
 
 
 # ---------------------------
-# Streamlit App UI
+# Streamlit App UI (Improved)
 # ---------------------------
 
-st.title("🏀 NBA Stat Predictor (Powered by nba_api)")
-st.write("Enter an NBA player's name to predict their next game's points using AST + REB averages.")
+# App config
+st.set_page_config(page_title="🏀 NBA Stat Predictor", page_icon="🏀", layout="wide")
 
-player_name = st.text_input("Enter Player Name (e.g., Stephen Curry, LeBron James):")
+# Header
+st.markdown(
+    """
+    <div style="text-align:center; padding:15px; background-color:#0b1e2d; border-radius:10px;">
+        <h1 style="color:#ffffff;">🏀 NBA Stat Predictor</h1>
+        <p style="color:#cccccc;">Powered by <b>nba_api</b> | Predict player performance based on recent stats</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-if st.button("Predict"):
+# Player search input
+st.sidebar.header("🔎 Search Player")
+player_name = st.sidebar.text_input("Enter Player Name (e.g., Stephen Curry, LeBron James):")
+
+# Prediction button
+if st.sidebar.button("Predict"):
     if not player_name.strip():
-        st.error("⚠️ Please enter a player name.")
+        st.sidebar.error("⚠️ Please enter a player name.")
     else:
         pid, full_name = get_player_id(player_name)
         if pid is None:
-            st.error("❌ Player not found. Try a different name.")
+            st.sidebar.error("❌ Player not found. Try a different name.")
         else:
-            st.info(f"🔎 Found player: {full_name} (ID: {pid})")
+            st.success(f"🔎 Found player: {full_name} (ID: {pid})")
 
             stats_df = get_recent_stats(pid)
             if stats_df is None:
                 st.error("❌ Could not fetch recent games for this player.")
             else:
-                st.write("📊 Recent Games (used for prediction):")
+                # Player card
+                st.markdown(
+                    f"""
+                    <div style="padding:20px; border-radius:15px; background-color:#f8f9fa; box-shadow:0px 4px 12px rgba(0,0,0,0.2); margin-bottom:20px;">
+                        <h2 style="color:#0b1e2d;">📋 {full_name}</h2>
+                        <p style="color:#333;">Recent performance stats used for prediction</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                # Show recent stats
+                st.write("📊 Recent Games:")
                 st.dataframe(stats_df[["GAME_DATE", "PTS", "AST", "REB"]])
 
+                # Make prediction
                 features = prepare_features(stats_df)
                 prediction = model.predict(features)
 
-                st.success(f"🎯 Predicted Points for {full_name}: **{prediction[0]:.2f}**")
+                # Display prediction in a metric card
+                col1, col2, col3 = st.columns(3)
+                col1.metric("🎯 Predicted Points", f"{prediction[0]:.2f}")
+                col2.metric("📈 Avg Assists", f"{stats_df['AST'].mean():.1f}")
+                col3.metric("🏀 Avg Rebounds", f"{stats_df['REB'].mean():.1f}")

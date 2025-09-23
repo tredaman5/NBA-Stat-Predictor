@@ -15,9 +15,6 @@ It uses recent game logs (assists & rebounds) to predict a player's next game po
 
 ---
 
-## 📸 Demo
-
-![NBA Stat Predictor Screenshot](https://via.placeholder.com/800x400.png?text=NBA+Stat+Predictor+Demo)
 
 ---
 
